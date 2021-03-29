@@ -1,0 +1,80 @@
+# Le fichier CO2.csv se trouve dans le répertoire suivant sur la machine virtuelle : /home/oracle/data_group_1/CO2.csv
+
+export MYDATAHOME=/home/oracle/data_group_1
+export MYPROJECTHOME=/home/oracle/Projet-Big-Data-MBDS
+ 
+# Compiler le code
+
+cd $MYPROJECTHOME/03_MapReduce
+javac CO2*
+
+# Construire la hierarchie du .jar et y déplacer le code compilé
+
+ mkdir -p org/co2
+ mv CO2*.class org/co2/
+
+# Générer le jar
+
+ jar -cvf CO2.jar -C . org
+
+# Dépalcer le fichier CO2.csv sur HDFS
+
+hadoop fs -mkdir /CO2
+
+# supprimer le fichier si besoin
+hadoop fs -rm /CO2/CO2.csv
+
+hadoop fs -put $MYDATAHOME/CO2.csv /CO2
+
+# Vérifiez sa présence sur HDFS:
+
+hadoop fs -ls /CO2
+
+# Réponse : 
+# Found 1 items
+# -rw-r--r--   1 oracle supergroup      38916 2021-03-22 06:02 /CO2/CO2.csv
+
+# Exécutez le programme
+
+hadoop fs -rm /CO2/results/*
+hadoop fs -rmdir /CO2/results
+
+hadoop jar CO2.jar org.co2.CO2 /CO2/CO2.csv /CO2/results
+
+# Consulter les résultats
+
+hadoop fs -ls /CO2/results
+hadoop fs -cat /CO2/results/part-r-00000
+
+
+## Visualisation des résultats : 
+
+AUDI	-2400	26	191
+BENTLEY	0	84	102
+BMW	-631	39	80
+CITROEN	-6000	0	347
+DS	-3000	16	159
+HYUNDAI	-4000	8	151
+JAGUAR	-6000	0	271
+KIA	-3000	15	132
+LAND	0	69	78
+MERCEDES	7790	187	749
+MINI	-3000	21	126
+MITSUBISHI	0	40	98
+NISSAN	5802	160	681
+PEUGEOT	-3000	15	144
+PORSCHE	0	69	89
+RENAULT	-6000	0	206
+SKODA	-666	27	98
+SMART	-6000	0	191
+TESLA	-6000	0	245
+TOYOTA	0	32	43
+VOLKSWAGEN	-1714	23	96
+VOLVO	0	42	72
+
+
+# Export du fichier de résultats depuis hdfs
+
+hadoop fs -get /CO2/results/part-r-00000 $MYPROJECTHOME/03_MapReduce/co2_resultat.txt
+
+hadoop fs -get /CO2/results/part-r-00000 $MYDATAHOME/co2_resultat.txt
